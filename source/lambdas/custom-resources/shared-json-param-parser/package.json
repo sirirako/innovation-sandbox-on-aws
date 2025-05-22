@@ -1,0 +1,11 @@
+{
+  "name": "@amzn/innovation-sandbox-shared-json-param-parser",
+  "description": "Parsed shared SSM configuration parameters from spoke stacks - Lambda - Innovation Sandbox on AWS (SO0284)",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "license": "Apache-2.0"
+}

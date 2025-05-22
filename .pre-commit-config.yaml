@@ -1,0 +1,74 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+exclude: '^.*\.svg$'
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-executables-have-shebangs
+        name: Check executables have shebangs
+      - id: fix-byte-order-marker
+        name: Fix byte order marker
+      - id: check-case-conflict
+        name: Check case conflict
+      - id: check-json
+        name: Check json
+      - id: check-yaml
+        name: Check yaml
+        args: [--allow-multiple-documents, --unsafe]
+      - id: check-toml
+        name: Check toml
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+      - id: check-added-large-files
+        name: Check for added large files
+        exclude: |
+          (?x)^(
+            ^.*/package-lock.json |
+          )$
+      - id: end-of-file-fixer
+        name: Fix end of the files
+      - id: fix-encoding-pragma
+        name: Fix python encoding pragma
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+      - id: mixed-line-ending
+        name: Mixed line ending
+      - id: detect-private-key
+        name: Detect private keys
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        name: Insert license header (typescript and javascript)
+        files: \.tsx$|\.ts$|\.js$|\.jsx$|\.scss$
+        args:
+          - --license-filepath
+          - ./license_header.txt
+          - --comment-style
+          - // # defaults to Python's # syntax, requires changing for typescript syntax.
+          - --detect-license-in-X-top-lines=3
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        name: Prettier
+        additional_dependencies:
+          - "prettier@^3.3.3"
+          - "@trivago/prettier-plugin-sort-imports"
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.10.0
+    hooks:
+      - id: shellcheck
+        name: ShellChecker
+        args: ["-x", "--severity=warning"]
+        types: [shell]
+  # Local
+  - repo: local
+    hooks:
+      - id: detect-empty-files
+        name: Detect Empty Files
+        entry: scripts/detect-empty-files.sh
+        language: system
+        pass_filenames: false
