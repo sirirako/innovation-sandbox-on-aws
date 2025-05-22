@@ -1,0 +1,36 @@
+version: 0.2
+phases:
+  build:
+    commands:
+      - echo =================================== Cleaning up AWS account $CLEANUP_ACCOUNT_ID ===================================
+      - echo StateMachineExecutionId=$STATE_MACHINE_EXECUTION_ID
+      - echo ----------------------------- Retrieving nuke config file from AWS AppConfig ------------------------------
+      - |
+        export APPCONFIG_TOKEN=$(aws appconfigdata start-configuration-session --application-identifier $APPCONFIG_APPLICATION_ID \
+        --environment-identifier $APPCONFIG_ENVIRONMENT_ID \
+        --configuration-profile-identifier $APPCONFIG_NUKE_CONFIG_CONFIGURATION_PROFILE_ID \
+        --query InitialConfigurationToken --output text)
+      - aws appconfigdata get-latest-configuration --configuration-token $APPCONFIG_TOKEN nuke-config.yaml
+      - echo ------------------------------ Ingesting cleanup config into nuke config file -----------------------------
+      - sed -i s/%HUB_ACCOUNT_ID%/${HUB_ACCOUNT_ID}/g nuke-config.yaml
+      - sed -i s/%CLEANUP_ACCOUNT_ID%/${CLEANUP_ACCOUNT_ID}/g nuke-config.yaml
+      - sed -i s/%CLEANUP_ROLE_NAME%/${CLEANUP_ROLE_NAME}/g nuke-config.yaml
+      - REGIONS_STR=$(aws ssm get-parameter --name $ACCOUNT_POOL_CONFIG_PARAM_ARN --query 'Parameter.Value' --output text | jq -r '.isbManagedRegions')
+      - REGION_ARRAY=$(echo $REGIONS_STR | tr ',' '\n')
+      - for REGION in $REGION_ARRAY; do sed -i  "s/^regions:\s*$/regions:\n  - ${REGION}/" nuke-config.yaml; done
+      - cat nuke-config.yaml
+
+      - echo ------------------------ Assuming IAM role $INTERMEDIATE_ROLE_ARN ------------------------
+      - export INTERMEDIATE_ROLE_CREDS=$(aws sts assume-role --role-arn $INTERMEDIATE_ROLE_ARN --role-session-name AccountCleanup)
+      - aws configure set aws_access_key_id $(echo $INTERMEDIATE_ROLE_CREDS | jq -r .Credentials.AccessKeyId) --profile intermediate-role
+      - aws configure set aws_secret_access_key $(echo $INTERMEDIATE_ROLE_CREDS | jq -r .Credentials.SecretAccessKey) --profile intermediate-role
+      - aws configure set aws_session_token $(echo $INTERMEDIATE_ROLE_CREDS | jq -r .Credentials.SessionToken) --profile intermediate-role
+
+      - echo ------------------------ Assuming IAM role $CLEANUP_ROLE_NAME in sandbox account ------------------------
+      - export SANDBOX_ACCOUNT_ROLE_CREDS=$(aws sts assume-role --profile intermediate-role --role-arn arn:aws:iam::$CLEANUP_ACCOUNT_ID:role/$CLEANUP_ROLE_NAME --role-session-name AccountCleanup)
+      - aws configure set aws_access_key_id $(echo $SANDBOX_ACCOUNT_ROLE_CREDS | jq -r .Credentials.AccessKeyId) --profile cleanup
+      - aws configure set aws_secret_access_key $(echo $SANDBOX_ACCOUNT_ROLE_CREDS | jq -r .Credentials.SecretAccessKey) --profile cleanup
+      - aws configure set aws_session_token $(echo $SANDBOX_ACCOUNT_ROLE_CREDS | jq -r .Credentials.SessionToken) --profile cleanup
+
+      - echo ------------------------ Running AWS Nuke ------------------------
+      - aws-nuke nuke -c nuke-config.yaml --no-dry-run --no-alias-check --force --profile cleanup --log-format=json

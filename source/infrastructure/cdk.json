@@ -1,0 +1,18 @@
+{
+  "app": "npx --no-install tsx bin/app.ts",
+  "output": "../../.build/cdk.out",
+  "watch": {
+    "include": ["**"],
+    "exclude": [
+      "README.md",
+      "cdk*.json",
+      "**/*.d.ts",
+      "**/*.js",
+      "tsconfig.json",
+      "package*.json",
+      "yarn.lock",
+      "node_modules",
+      "test"
+    ]
+  }
+}
