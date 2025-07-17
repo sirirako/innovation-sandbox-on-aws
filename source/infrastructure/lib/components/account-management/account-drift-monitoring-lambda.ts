@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import { EventBus } from "aws-cdk-lib/aws-events";
+import { Duration } from "aws-cdk-lib";
+import { EventBus, Rule, Schedule } from "aws-cdk-lib/aws-events";
+import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import { CfnSchedule } from "aws-cdk-lib/aws-scheduler";
 import { Construct } from "constructs";
 import path from "path";
 
@@ -67,8 +68,8 @@ export class AccountDriftMonitoringLambda extends Construct {
 
     const role = new Role(scope, "AccountDriftMonitoringLambdaInvokeRole", {
       description:
-        "allows EventBridgeScheduler to invoke Innovation Sandbox's AccountDriftMonitoring lambda",
-      assumedBy: new ServicePrincipal("scheduler.amazonaws.com"),
+        "allows EventBridge to invoke Innovation Sandbox's AccountDriftMonitoring lambda",
+      assumedBy: new ServicePrincipal("events.amazonaws.com"),
     });
 
     driftLambda.lambdaFunction.grantInvoke(role);
@@ -80,20 +81,13 @@ export class AccountDriftMonitoringLambda extends Construct {
       IsbComputeStack.sharedSpokeConfig.data.accountTable,
     );
 
-    new CfnSchedule(scope, "AccountDriftMonitoringScheduledEvent", {
+    // Replace EventBridge Scheduler with CloudWatch Events Rule
+    new Rule(scope, "AccountDriftMonitoringScheduledEvent", {
       description: "triggers Drift Monitoring every 6 hours",
-      scheduleExpression: "rate(6 hour)",
-      flexibleTimeWindow: {
-        mode: "FLEXIBLE",
-        maximumWindowInMinutes: 30,
-      },
-      target: {
-        retryPolicy: {
-          maximumRetryAttempts: 10,
-        },
-        arn: driftLambda.lambdaFunction.functionArn,
-        roleArn: role.roleArn,
-      },
+      schedule: Schedule.rate(Duration.hours(6)),
+      targets: [new LambdaFunction(driftLambda.lambdaFunction, {
+        retryAttempts: 10,
+      })],
     });
   }
 }

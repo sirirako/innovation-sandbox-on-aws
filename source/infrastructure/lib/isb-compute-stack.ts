@@ -3,7 +3,6 @@
 import { Stack, type StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 
-import { ApplicationInsights } from "@amzn/innovation-sandbox-infrastructure/components/observability/app-insights";
 import {
   addParameterGroup,
   ParameterWithLabel,
@@ -106,9 +105,7 @@ export class IsbComputeStack extends Stack {
       useStableTaggingCondition: useStableTagging.getCondition(),
     });
 
-    new ApplicationInsights(this, "IsbApplicationInsights", {
-      namespace: namespaceParam.namespace.valueAsString,
-    });
+    // Application Insights removed for GovCloud compatibility
 
     applyIsbTag(this, `${namespaceParam.namespace.valueAsString}`);
   }

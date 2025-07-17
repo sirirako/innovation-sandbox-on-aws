@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import { EventBus } from "aws-cdk-lib/aws-events";
+import { Duration } from "aws-cdk-lib";
+import { EventBus, Rule, Schedule } from "aws-cdk-lib/aws-events";
+import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import { CfnSchedule } from "aws-cdk-lib/aws-scheduler";
 import { Construct } from "constructs";
 import path from "path";
 
@@ -63,8 +64,8 @@ export class LeaseMonitoringLambda extends Construct {
 
     const role = new Role(scope, "LambdaInvokeRole", {
       description:
-        "allows EventBridgeScheduler to invoke Innovation Sandbox's LeaseMonitoring lambda",
-      assumedBy: new ServicePrincipal("scheduler.amazonaws.com"),
+        "allows EventBridge to invoke Innovation Sandbox's LeaseMonitoring lambda",
+      assumedBy: new ServicePrincipal("events.amazonaws.com"),
     });
 
     lambda.lambdaFunction.grantInvoke(role);
@@ -75,20 +76,13 @@ export class LeaseMonitoringLambda extends Construct {
       IsbComputeStack.sharedSpokeConfig.data.leaseTable,
     );
 
-    new CfnSchedule(scope, "LeaseMonitoringScheduledEvent", {
+    // Replace EventBridge Scheduler with CloudWatch Events Rule
+    new Rule(scope, "LeaseMonitoringScheduledEvent", {
       description: "triggers LeaseMonitoring every hour",
-      scheduleExpression: "rate(1 hour)",
-      flexibleTimeWindow: {
-        mode: "FLEXIBLE",
-        maximumWindowInMinutes: 5,
-      },
-      target: {
-        retryPolicy: {
-          maximumRetryAttempts: 20,
-        },
-        arn: lambda.lambdaFunction.functionArn,
-        roleArn: role.roleArn,
-      },
+      schedule: Schedule.rate(Duration.hours(1)),
+      targets: [new LambdaFunction(lambda.lambdaFunction, {
+        retryAttempts: 20,
+      })],
     });
   }
 }

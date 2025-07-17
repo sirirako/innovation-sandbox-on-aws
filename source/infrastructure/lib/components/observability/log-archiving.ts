@@ -10,6 +10,8 @@ import { addCfnGuardSuppression } from "@amzn/innovation-sandbox-infrastructure/
 import { isDevMode } from "@amzn/innovation-sandbox-infrastructure/helpers/deployment-mode";
 import { IsbComputeResources } from "@amzn/innovation-sandbox-infrastructure/isb-compute-resources";
 import { Duration, RemovalPolicy, Stack, Token } from "aws-cdk-lib";
+import { Rule, Schedule } from "aws-cdk-lib/aws-events";
+import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 import {
   Effect,
   PolicyStatement,
@@ -23,7 +25,6 @@ import {
   ObjectOwnership,
   StorageClass,
 } from "aws-cdk-lib/aws-s3";
-import { CfnSchedule } from "aws-cdk-lib/aws-scheduler";
 import { Construct } from "constructs";
 import path from "path";
 
@@ -149,8 +150,8 @@ export class LogArchiving extends Construct {
 
     const role = new Role(scope, "LogArchivingLambdaInvokeRole", {
       description:
-        "Allows EventBridgeScheduler to invoke Innovation Sandbox's Log Archiving lambda",
-      assumedBy: new ServicePrincipal("scheduler.amazonaws.com"),
+        "Allows EventBridge to invoke Innovation Sandbox's Log Archiving lambda",
+      assumedBy: new ServicePrincipal("events.amazonaws.com"),
     });
 
     logArchivingLambda.lambdaFunction.grantInvoke(role);
@@ -174,20 +175,13 @@ export class LogArchiving extends Construct {
 
     kmsKey.grantEncryptDecrypt(logArchivingLambda.lambdaFunction);
 
-    new CfnSchedule(scope, "LogArchivingScheduledEvent", {
+    // Replace EventBridge Scheduler with CloudWatch Events Rule
+    new Rule(scope, "LogArchivingScheduledEvent", {
       description: `Invokes Log Archiving ${EXPORT_PERIOD_DAYS} days`,
-      scheduleExpression: `rate(${EXPORT_PERIOD_DAYS} days)`,
-      flexibleTimeWindow: {
-        mode: "FLEXIBLE",
-        maximumWindowInMinutes: 4 * 60, // 4 hours
-      },
-      target: {
-        retryPolicy: {
-          maximumRetryAttempts: 3,
-        },
-        arn: logArchivingLambda.lambdaFunction.functionArn,
-        roleArn: role.roleArn,
-      },
+      schedule: Schedule.rate(Duration.days(EXPORT_PERIOD_DAYS)),
+      targets: [new LambdaFunction(logArchivingLambda.lambdaFunction, {
+        retryAttempts: 3,
+      })],
     });
   }
 }

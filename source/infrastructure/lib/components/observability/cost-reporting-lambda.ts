@@ -19,7 +19,8 @@ import {
   isbTagName,
 } from "@amzn/innovation-sandbox-infrastructure/helpers/tagging-helper";
 import { Stack } from "aws-cdk-lib";
-import { CfnSchedule } from "aws-cdk-lib/aws-scheduler";
+import { Rule, Schedule } from "aws-cdk-lib/aws-events";
+import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 
 export interface CostReportingLambdaProps {
   readonly orgMgtAccountId: string;
@@ -69,8 +70,8 @@ export class CostReportingLambda extends Construct {
 
     const role = new Role(scope, "CostReportingLambdaInvokeRole", {
       description:
-        "allows EventBridgeScheduler to invoke Innovation Sandbox's CostMonitoring lambda",
-      assumedBy: new ServicePrincipal("scheduler.amazonaws.com"),
+        "allows EventBridge to invoke Innovation Sandbox's CostMonitoring lambda",
+      assumedBy: new ServicePrincipal("events.amazonaws.com"),
     });
 
     costReportingLambda.lambdaFunction.grantInvoke(role);
@@ -84,20 +85,19 @@ export class CostReportingLambda extends Construct {
       IsbComputeStack.sharedSpokeConfig.data.accountTable,
     );
 
-    new CfnSchedule(scope, "CostReportingScheduledEvent", {
+    // Replace EventBridge Scheduler with CloudWatch Events Rule
+    new Rule(scope, "CostReportingScheduledEvent", {
       description: "triggers Cost Monitoring on the forth day of every month",
-      scheduleExpression: "cron(25 1 4 * ? *)", // Runs at 01:25 UTC on the 4th of every month
-      flexibleTimeWindow: {
-        mode: "FLEXIBLE",
-        maximumWindowInMinutes: 6 * 60, // 6 hours
-      },
-      target: {
-        retryPolicy: {
-          maximumRetryAttempts: 5,
-        },
-        arn: costReportingLambda.lambdaFunction.functionArn,
-        roleArn: role.roleArn,
-      },
+      schedule: Schedule.cron({
+        minute: "25",
+        hour: "1",
+        day: "4",
+        month: "*",
+        year: "*",
+      }),
+      targets: [new LambdaFunction(costReportingLambda.lambdaFunction, {
+        retryAttempts: 5,
+      })],
     });
   }
 }
