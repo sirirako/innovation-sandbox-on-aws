@@ -1,9 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import {
-  CloudFrontClient,
-  GetDistributionCommand,
-} from "@aws-sdk/client-cloudfront";
+// No longer need CloudFront client imports
 import {
   GetSecretValueCommand,
   SecretsManagerClient,
@@ -21,7 +18,7 @@ export type TestConfiguration = {
   sandboxAccountTable: string;
   leaseTemplateTable: string;
   leaseTable: string;
-  cloudfrontDistributionUrl: string;
+  applicationUrl: string;
   appConfig: {
     applicationId: string;
     environmentId: string;
@@ -47,7 +44,6 @@ declare module "vitest" {
 }
 
 const StsClient = new STSClient();
-const cloudFrontClient = new CloudFrontClient();
 const secretsManagerClient = new SecretsManagerClient();
 
 let originalGlobalConfig: GlobalConfig;
@@ -111,15 +107,11 @@ export async function setup({ provide }: GlobalSetupContext): Promise<void> {
       dataStackReader.findResourceByPartialId("LeaseTable")
         ?.PhysicalResourceId!,
 
-    cloudfrontDistributionUrl: `https://${(
-      await cloudFrontClient.send(
-        new GetDistributionCommand({
-          Id: computeStackReader.findResourceByPartialId(
-            "CloudFrontUiApiIsbCloudFrontDistribution",
-          )?.PhysicalResourceId!,
-        }),
-      )
-    ).Distribution?.DomainName!}`,
+    applicationUrl: `https://${
+      computeStackReader.findResourceByPartialId(
+        "AlbUiApiIsbApplicationLoadBalancer",
+      )?.PhysicalResourceId!
+    }`,
 
     accountCleanerStateMachineArn: computeStackReader.findResourceByPartialId(
       "AccountCleanerStepFunctionStateMachine",

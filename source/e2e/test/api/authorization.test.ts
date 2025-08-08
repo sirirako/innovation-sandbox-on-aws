@@ -13,8 +13,8 @@ let validToken: string;
 let validJwtSecret: string;
 
 beforeAll(async () => {
-  const { cloudfrontDistributionUrl, jwtSecret } = inject("testConfiguration");
-  testUrl = `${cloudfrontDistributionUrl}/api/leaseTemplates`;
+  const { applicationUrl, jwtSecret } = inject("testConfiguration");
+  testUrl = `${applicationUrl}/api/leaseTemplates`;
   validJwtSecret = jwtSecret;
   validToken = jwt.sign({ user: testIsbUser }, validJwtSecret);
 });

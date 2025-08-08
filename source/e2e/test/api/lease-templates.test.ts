@@ -19,9 +19,9 @@ let leaseTemplateStore: LeaseTemplateStore;
 let token: string;
 
 beforeAll(async () => {
-  const { cloudfrontDistributionUrl, leaseTemplateTable, jwtSecret } =
+  const { applicationUrl, leaseTemplateTable, jwtSecret } =
     inject("testConfiguration");
-  apiBaseUrl = `${cloudfrontDistributionUrl}/api`;
+  apiBaseUrl = `${applicationUrl}/api`;
 
   leaseTemplateStore = IsbServices.leaseTemplateStore({
     LEASE_TEMPLATE_TABLE_NAME: leaseTemplateTable,

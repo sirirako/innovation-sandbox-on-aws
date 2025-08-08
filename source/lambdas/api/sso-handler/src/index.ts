@@ -86,4 +86,16 @@ export const handler = baseMiddlewareBundle({
 })
   .use(errorWrapperMiddleware())
   .use(isbConfigMiddleware())
-  .handler(serverless(app));
+  .handler(async (event, context) => {
+    console.log('SSO Handler invoked with event:', JSON.stringify(event, null, 2));
+    console.log('SSO Handler context:', JSON.stringify(context, null, 2));
+    
+    try {
+      const result = await serverless(app)(event, context);
+      console.log('SSO Handler result:', JSON.stringify(result, null, 2));
+      return result;
+    } catch (error) {
+      console.error('SSO Handler error:', error);
+      throw error;
+    }
+  });

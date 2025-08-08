@@ -12,8 +12,8 @@ let apiBaseUrl: string;
 let token: string;
 
 beforeAll(async () => {
-  const { cloudfrontDistributionUrl, jwtSecret } = inject("testConfiguration");
-  apiBaseUrl = `${cloudfrontDistributionUrl}/api`;
+  const { applicationUrl, jwtSecret } = inject("testConfiguration");
+  apiBaseUrl = `${applicationUrl}/api`;
   token = getSignedJwt(jwtSecret);
 });
 

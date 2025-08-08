@@ -28,13 +28,13 @@ let token: string;
 
 beforeAll(async () => {
   const {
-    cloudfrontDistributionUrl,
+    applicationUrl,
     leaseTable,
     leaseTemplateTable,
     jwtSecret,
   } = inject("testConfiguration");
 
-  apiBaseUrl = `${cloudfrontDistributionUrl}/api`;
+  apiBaseUrl = `${applicationUrl}/api`;
   leaseStore = IsbServices.leaseStore({
     LEASE_TABLE_NAME: leaseTable,
     USER_AGENT_EXTRA: "InnovationSandbox-E2E",

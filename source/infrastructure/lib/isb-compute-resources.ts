@@ -7,6 +7,7 @@ import { Construct } from "constructs";
 
 import { AccountCleaner } from "@amzn/innovation-sandbox-infrastructure/components/account-cleaner/account-cleaner";
 import { RestApi } from "@amzn/innovation-sandbox-infrastructure/components/api/rest-api-all";
+import { AlbUiApi } from "@amzn/innovation-sandbox-infrastructure/components/alb/alb-ui-api";
 import { CloudfrontUiApi } from "@amzn/innovation-sandbox-infrastructure/components/cloudfront/cloudfront-ui-api";
 import { DeploymentUUID } from "@amzn/innovation-sandbox-infrastructure/components/custom-resources/deployment-uuid";
 import { IsbInternalCore } from "@amzn/innovation-sandbox-infrastructure/components/events/isb-internal-core";
@@ -91,10 +92,24 @@ export class IsbComputeResources {
       allowListedCidr: props.allowListedCidr,
     });
 
-    new CloudfrontUiApi(scope, "CloudFrontUiApi", {
-      restApi,
-      namespace: props.namespace,
-    });
+    // Check if we should use ALB architecture or original architecture
+    const useAlbArchitecture = scope.node.tryGetContext('useAlbArchitecture') ?? true;
+    
+    console.log(`🏗️  Deploying ${useAlbArchitecture ? 'ALB + Container' : 'Original CloudFront + S3'} architecture...`);
+
+    if (useAlbArchitecture) {
+      // Deploy ALB + Container architecture
+      new AlbUiApi(scope, "AlbUiApi", {
+        restApi,
+        namespace: props.namespace,
+      });
+    } else {
+      // Deploy original architecture with CloudFront + S3 + API Gateway
+      new CloudfrontUiApi(scope, "CloudfrontUiApi", {
+        restApi,
+        namespace: props.namespace,
+      });
+    }
 
     new LogInsightsQueries(scope, "LogInsightsQueries", {
       namespace: props.namespace,

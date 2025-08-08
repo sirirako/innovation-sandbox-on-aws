@@ -5,6 +5,7 @@
 node_modules/
 !source/.typescript/lambda/**/*.js
 !source/lambda/**/*.js
+!source/infrastructure/lib/components/alb/api-proxy-container/app.js
 dist
 bom.json
 .env
@@ -29,9 +30,15 @@ temp/
 ### VisualStudioCode ###
 .vscode
 
+### Kiro IDE ###
+.kiro
+
 ### macOS ###
 .DS_Store
 
 .idea
 
 **/coverage
+
+# ALB Container build artifacts
+source/infrastructure/lib/components/alb/api-proxy-container/public/

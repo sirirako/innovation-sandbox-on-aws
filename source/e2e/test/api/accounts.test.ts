@@ -16,9 +16,9 @@ let sandboxAccountStore: SandboxAccountStore;
 let token: string;
 
 beforeAll(async () => {
-  const { cloudfrontDistributionUrl, sandboxAccountTable, jwtSecret } =
+  const { applicationUrl, sandboxAccountTable, jwtSecret } =
     inject("testConfiguration");
-  apiBaseUrl = `${cloudfrontDistributionUrl}/api`;
+  apiBaseUrl = `${applicationUrl}/api`;
   sandboxAccountStore = IsbServices.sandboxAccountStore({
     ACCOUNT_TABLE_NAME: sandboxAccountTable,
     USER_AGENT_EXTRA: "InnovationSandbox-E2E",

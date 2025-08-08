@@ -166,16 +166,66 @@ export class AuthApi {
           authorizationType: AuthorizationType.NONE,
           authorizer: undefined,
         },
+        defaultCorsPreflightOptions: {
+          allowOrigins: [
+            `https://innova-albui-fewygarojbbg-279380156.us-east-1.elb.amazonaws.com`,
+            `https://${restApi.domainName || "localhost"}`,
+          ],
+          allowMethods: ["GET", "POST", "OPTIONS"],
+          allowHeaders: [
+            "Content-Type",
+            "X-Amz-Date",
+            "Authorization",
+            "X-Api-Key",
+            "X-Amz-Security-Token",
+            "X-Amz-User-Agent",
+            "Origin",
+            "Referer",
+            "Accept",
+            "Accept-Language",
+            "Accept-Encoding",
+            "User-Agent",
+            "Cache-Control",
+            "Pragma",
+          ],
+          allowCredentials: true,
+          maxAge: Duration.seconds(600),
+        },
       })
       .addResource("{action+}", {
         defaultIntegration: new LambdaIntegration(ssoLambda.lambdaFunction, {
           proxy: true,
           allowTestInvoke: true,
         }),
+        defaultCorsPreflightOptions: {
+          allowOrigins: [
+            `https://innova-albui-fewygarojbbg-279380156.us-east-1.elb.amazonaws.com`,
+            `https://${restApi.domainName || "localhost"}`,
+          ],
+          allowMethods: ["GET", "POST", "OPTIONS"],
+          allowHeaders: [
+            "Content-Type",
+            "X-Amz-Date",
+            "Authorization",
+            "X-Api-Key",
+            "X-Amz-Security-Token",
+            "X-Amz-User-Agent",
+            "Origin",
+            "Referer",
+            "Accept",
+            "Accept-Language",
+            "Accept-Encoding",
+            "User-Agent",
+            "Cache-Control",
+            "Pragma",
+          ],
+          allowCredentials: true,
+          maxAge: Duration.seconds(600),
+        },
       });
     const methodGet = ssoResource.addMethod("GET");
     const methodPost = ssoResource.addMethod("POST");
-    const methodOptions = ssoResource.addMethod("OPTIONS");
+    // OPTIONS method is automatically created by defaultCorsPreflightOptions
 
     addCfnGuardSuppression(ssoResource, [
       "API_GW_METHOD_AUTHORIZATION_TYPE_RULE",
@@ -184,9 +234,6 @@ export class AuthApi {
       "API_GW_METHOD_AUTHORIZATION_TYPE_RULE",
     ]);
     addCfnGuardSuppression(methodPost, [
-      "API_GW_METHOD_AUTHORIZATION_TYPE_RULE",
-    ]);
-    addCfnGuardSuppression(methodOptions, [
       "API_GW_METHOD_AUTHORIZATION_TYPE_RULE",
     ]);
   }

@@ -76,7 +76,7 @@ The Innovation Sandbox on AWS is built using a **multi-stack CDK architecture** 
 
 **Key Components**:
 - **API Gateway + Lambda**: RESTful API for all operations
-- **CloudFront + S3**: Serves the web application
+- **ALB + S3**: Serves the web application
 - **ECS Fargate**: Runs the account cleaning process
 - **EventBridge + SQS**: Event-driven architecture
 - **CloudWatch**: Monitoring and logging
@@ -168,7 +168,7 @@ The Innovation Sandbox on AWS is built using a **multi-stack CDK architecture** 
 
 **Frontend Application**
 - **React-based SPA**: Modern single-page application
-- **CloudFront Distribution**: Global content delivery
+- **Application Load Balancer (ALB)**: Distributes traffic to frontend and API
 - **S3 Static Hosting**: Scalable and cost-effective hosting
 - **Authentication Integration**: Seamless SSO with Identity Center
 
@@ -311,12 +311,12 @@ The Innovation Sandbox follows a well-defined data flow pattern that ensures sec
 ### User Request Flow
 
 1. **User Authentication**
-   - User accesses web application via CloudFront
+   - User accesses web application via Application Load Balancer (ALB)
    - Authentication handled by IAM Identity Center
    - JWT tokens issued for API access
 
 2. **API Request Processing**
-   - CloudFront → API Gateway → Lambda Functions
+   - ALB → API Gateway → Lambda Functions
    - Request validation and authorization
    - Business logic execution
 
