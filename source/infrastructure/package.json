@@ -1,0 +1,23 @@
+{
+  "name": "@amzn/innovation-sandbox-infrastructure",
+  "description": "Infrastructure - Innovation Sandbox on AWS (SO0284)",
+  "version": "1.0.0",
+  "bin": {
+    "infrastructure": "bin/app.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:update-snapshots": "vitest run -u",
+    "cdk": "cdk"
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@aws-solutions-constructs/aws-eventbridge-lambda": "^2.85.0",
+    "@aws-solutions-constructs/aws-eventbridge-sqs": "^2.85.0",
+    "@aws-solutions-constructs/aws-sqs-lambda": "^2.85.0",
+    "aws-cdk": "^2.1014.0",
+    "aws-cdk-lib": "^2.195.0",
+    "constructs": "^10.3.0"
+  }
+}

@@ -1,0 +1,41 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+@use "@cloudscape-design/design-tokens/index" as cloudscape;
+
+.toast {
+  width: 100vw;
+  max-width: 540px;
+  box-shadow:
+    rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+    rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+.top {
+  top: 60px;
+  max-width: 420px;
+}
+
+.success {
+  background: cloudscape.$color-background-notification-green !important;
+}
+
+.error {
+  background: cloudscape.$color-background-notification-red !important;
+}
+
+.container {
+  padding-right: 20px;
+}
+
+.description {
+  color: #fff;
+  font-size: 0.9em;
+}
+
+.title {
+  color: #fff;
+  font-size: 0.95em;
+  font-weight: 600;
+  padding-bottom: 5px;
+}

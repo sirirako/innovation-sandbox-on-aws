@@ -1,0 +1,142 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SecurityAndIsolationRestrictions",
+      "Effect": "Deny",
+      "Action": [
+        "aws-portal:ModifyAccount",
+        "aws-portal:ViewAccount",
+        "cloudtrail:CreateServiceLinkedChannel",
+        "cloudtrail:UpdateServiceLinkedChannel",
+        "iam:CreateUser",
+        "networkmanager:AssociateTransitGatewayConnectPeer",
+        "networkmanager:DisassociateTransitGatewayConnectPeer",
+        "networkmanager:StartOrganizationServiceAccessUpdate",
+        "ram:CreateResourceShare",
+        "ram:EnableSharingWithAwsOrganization",
+        "ssm:ModifyDocumentPermission",
+        "wafv2:DisassociateFirewallManager",
+        "wafv2:PutFirewallManagerRuleGroups",
+        "cloudtrail:LookupEvents"
+      ],
+      "Resource": ["*"],
+      "Condition": {
+        "ArnNotLike": {
+          "aws:PrincipalARN": [
+            "arn:aws:iam::*:role/InnovationSandbox-${namespace}*",
+            "arn:aws:iam::*:role/aws-reserved/sso.amazonaws.com/*AWSReservedSSO_${namespace}_IsbAdmins*",
+            "arn:aws:iam::*:role/stacksets-exec-*",
+            "arn:aws:iam::*:role/AWSControlTowerExecution"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "CostImplicationRestrictions",
+      "Effect": "Deny",
+      "Action": [
+        "aws-portal:ModifyBilling",
+        "aws-portal:ModifyPaymentMethods",
+        "ce:CreateAnomalyMonitor",
+        "ce:CreateAnomalySubscription",
+        "ce:CreateCostCategoryDefinition",
+        "ce:CreateNotificationSubscription",
+        "ce:CreateReport",
+        "ce:UpdatePreferences",
+        "devicefarm:Purchase*",
+        "devicefarm:RenewOffering",
+        "dynamodb:Purchase*",
+        "ec2:AcceptReservedInstancesExchangeQuote",
+        "ec2:EnableIpamOrganizationAdminAccount",
+        "ec2:ModifyReservedInstances",
+        "ec2:Purchase*",
+        "elasticache:Purchase*",
+        "es:Purchase*",
+        "glacier:Purchase*",
+        "mediaconnect:Purchase*",
+        "medialive:Purchase*",
+        "rds:Purchase*",
+        "redshift:Purchase*",
+        "shield:AssociateDRTRole",
+        "shield:CreateProtection",
+        "shield:CreateSubscription",
+        "shield:UpdateEmergencyContactSettings"
+      ],
+      "Resource": ["*"],
+      "Condition": {
+        "ArnNotLike": {
+          "aws:PrincipalARN": [
+            "arn:aws:iam::*:role/InnovationSandbox-${namespace}*",
+            "arn:aws:iam::*:role/aws-reserved/sso.amazonaws.com/*AWSReservedSSO_${namespace}_IsbAdmins*",
+            "arn:aws:iam::*:role/stacksets-exec-*",
+            "arn:aws:iam::*:role/AWSControlTowerExecution"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "OperationalRestrictions",
+      "Effect": "Deny",
+      "Action": [
+        "account:EnableRegion",
+        "auditmanager:DeregisterOrganizationAdminAccount",
+        "auditmanager:RegisterOrganizationAdminAccount",
+        "backup:PutBackupVaultLockConfiguration",
+        "cassandra:UpdatePartitioner",
+        "chime:*",
+        "cloudhsm:*",
+        "deepcomposer:AssociateCoupon",
+        "directconnect:AllocateConnectionOnInterconnect",
+        "directconnect:AllocateHostedConnection",
+        "directconnect:AssociateHostedConnection",
+        "directconnect:CreateInterconnect",
+        "drs:CreateExtendedSourceServer",
+        "elasticache:PurchaseReservedCacheNodesOffering",
+        "events:CreatePartnerEventSource",
+        "glacier:AbortVaultLock",
+        "glacier:CompleteVaultLock",
+        "glacier:InitiateVaultLock",
+        "glacier:SetVaultAccessPolicy",
+        "iotevents:PutLoggingOptions",
+        "iotsitewise:CreateBulkImportJob",
+        "lambda:CreateCodeSigningConfig",
+        "license-manager:CreateLicenseConversionTaskForResource",
+        "macie2:UpdateOrganizationConfiguration",
+        "mediaConvert:CreateQueue",
+        "medialive:ClaimDevice",
+        "mgn:*",
+        "robomaker:CreateDeploymentJob",
+        "robomaker:CreateFleet",
+        "robomaker:CreateRobot",
+        "robomaker:DeregisterRobot",
+        "robomaker:RegisterRobot",
+        "robomaker:SyncDeploymentJob",
+        "robomaker:UpdateRobotDeployment",
+        "route53domains:*",
+        "s3-object-lambda:PutObjectLegalHold",
+        "s3-object-lambda:PutObjectRetention",
+        "s3:PutObjectLegalHold",
+        "ses:PutDeliverabilityDashboardOption",
+        "storagegateway:*",
+        "wam:*",
+        "wellarchitected:UpdateGlobalSettings",
+        "workmail:AssumeImpersonationRole",
+        "workmail:CreateImpersonationRole",
+        "workmail:UpdateImpersonationRole",
+        "workspaces:ModifyAccount"
+      ],
+      "Resource": ["*"],
+      "Condition": {
+        "ArnNotLike": {
+          "aws:PrincipalARN": [
+            "arn:aws:iam::*:role/InnovationSandbox-${namespace}*",
+            "arn:aws:iam::*:role/aws-reserved/sso.amazonaws.com/*AWSReservedSSO_${namespace}_IsbAdmins*",
+            "arn:aws:iam::*:role/stacksets-exec-*",
+            "arn:aws:iam::*:role/AWSControlTowerExecution"
+          ]
+        }
+      }
+    }
+  ]
+}

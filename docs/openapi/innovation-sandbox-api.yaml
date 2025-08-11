@@ -1,0 +1,1236 @@
+openapi: 3.0.0
+info:
+  title: Innovation Sandbox on AWS
+  description: API documentation for the Innovation Sandbox on AWS solution.
+  version: 1.0.0
+  license:
+    name: Apache 2.0
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+servers:
+  - url: "{apiBaseUrl}"
+    description: Base URL used to make API requests
+    variables:
+      apiBaseUrl:
+        default: https://example.com/api
+        description: Base URL used to make API requests
+tags:
+  - name: leases
+    description: Contract that provides a user with temporary access to a sandbox account
+  - name: leaseTemplates
+    description: Configurations that can be used to request a sandbox lease
+  - name: accounts
+    description: AWS accounts registered as sandbox accounts within the solution
+  - name: configurations
+    description: Global configurations used by the solution
+  - name: auth
+    description: Authentication related operations
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ResponseBody:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - success
+            - fail
+            - error
+      discriminator:
+        propertyName: status
+        mapping:
+          success: "#/components/schemas/SuccessResponseBody"
+          fail: "#/components/schemas/FailResponseBody"
+          error: "#/components/schemas/ErrorResponseBody"
+    SuccessResponseBody:
+      allOf:
+        - $ref: "#/components/schemas/ResponseBody"
+        - type: object
+          required:
+            - status
+            - data
+          properties:
+            status:
+              type: string
+              enum:
+                - success
+            data:
+              type: object
+    FailResponseBody:
+      allOf:
+        - $ref: "#/components/schemas/ResponseBody"
+        - type: object
+          required:
+            - data
+          properties:
+            status:
+              type: string
+              enum:
+                - fail
+            data:
+              type: object
+    ErrorResponseBody:
+      allOf:
+        - $ref: "#/components/schemas/ResponseBody"
+        - type: object
+          required:
+            - status
+            - message
+          properties:
+            status:
+              type: string
+              enum:
+                - error
+            message:
+              type: string
+            code:
+              type: number
+            data:
+              type: object
+    PaginatedResults:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+        nextPageIdentifier:
+          type: string
+          example: "eyJsYXN0RXZhbHVhdGVkS2V5Ijp7InV1aWQiOnsicyI6IjEyMzQ1Njc4LTkwYWItY2RlZi0xMjM0LTU2Nzg5MGFiY2RlZiJ9fX0="
+    AwsAccountId:
+      type: string
+      description: AWS account ID
+      example: "123456789012"
+    AccountStatus:
+      type: string
+      enum: [Available, Active, AwaitingRecycle, Quarantined]
+      description: Current status of the account
+      example: "Available"
+    DriftAtLastScan:
+      type: boolean
+      description: Whether drift was detected at the last scan
+      example: false
+    ThresholdAction:
+      type: string
+      enum: [ALERT, FREEZE_ACCOUNT]
+      description: Action to take when threshold is reached
+      example: ALERT
+    BudgetThresholdDollarsSpent:
+      type: number
+      description: Threshold for budget notification
+      example: 80
+    DurationThresholdHoursRemaining:
+      type: number
+      description: Threshold for durations notification
+      example: 12
+    BudgetThresholds:
+      type: array
+      items:
+        type: object
+        properties:
+          dollarsSpent:
+            type: number
+            description: Threshold for budget notification
+            example: 80
+          action:
+            type: string
+            description: Action to take when threshold is reached
+            enum: [ALERT, FREEZE_ACCOUNT]
+            example: ALERT
+    DurationThresholds:
+      type: array
+      items:
+        type: object
+        properties:
+          hoursRemaining:
+            type: number
+            description: Threshold for durations notification
+            example: 12
+          action:
+            type: string
+            description: Action to take when threshold is reached
+            enum: [ALERT, FREEZE_ACCOUNT]
+            example: ALERT
+    Comments:
+      type: string
+      description: Comments about the lease
+      example: "This is a comment"
+    UserEmail:
+      type: string
+      format: email
+      description: Email of the user who owns the lease
+      example: "user@example.com"
+    LeaseStatus:
+      type: string
+      enum: [PendingApproval, Active, Frozen, Terminated, Expired]
+      description: Current status of the lease
+      example: "Active"
+    LeaseUuid:
+      type: string
+      format: uuid
+      description: Unique identifier for the lease
+      example: "12345678-90ab-cdef-1234-567890abcdef"
+    LeaseId:
+      type: string
+      description: Base64 encoded unique identifier for lease
+      example: "BASE64STRING"
+    LeaseTemplateUuid:
+      type: string
+      format: uuid
+      description: Unique identifier for the lease template used to create the lease
+      example: "12345678-90ab-cdef-1234-567890abcdef"
+    LeaseTemplateName:
+      type: string
+      description: Name of the lease template
+      example: Example Template
+    LeaseTemplateDescription:
+      type: string
+      description: Description of the lease template
+      example: Example Template Description
+    LeaseDurationInHours:
+      type: integer
+      description: Duration of the lease in hours
+      example: 24
+    MaxSpend:
+      type: number
+      description: Maximum spend allowed for the lease
+      example: 100
+    StartDate:
+      type: string
+      format: date-time
+      description: When the lease started
+      example: "2025-01-15T08:30:00Z"
+    ExpirationDate:
+      type: string
+      format: date-time
+      description: When the lease is scheduled to expire
+      example: "2025-01-22T08:30:00Z"
+    EndDate:
+      type: string
+      format: date-time
+      description: When the lease ended
+      example: "2025-01-22T08:30:00Z"
+    TotalCostAccrued:
+      type: number
+      description: Current cost accrued for this lease
+      example: 45.67
+    RequiresApproval:
+      type: boolean
+      description: Whether leases created from this template require approval
+      example: true
+    CreatedBy:
+      type: string
+      format: email
+      description: Email of the user who created the template
+      example: "admin@example.com"
+    MetaData:
+      type: object
+      properties:
+        createdTime:
+          type: string
+          format: date-time
+          description: Time when the resource was created
+          example: "2023-05-01T12:00:00Z"
+        lastEditTime:
+          type: string
+          format: date-time
+          description: Time when the resource was last edited
+          example: "2023-05-01T12:00:00Z"
+        schemaVersion:
+          type: string
+          description: Version of the schema used to create the resource
+          example: 1
+    Account:
+      type: object
+      required:
+        - awsAccountId
+        - status
+      properties:
+        awsAccountId:
+          $ref: "#/components/schemas/AwsAccountId"
+        status:
+          $ref: "#/components/schemas/AccountStatus"
+        driftAtLastScan:
+          $ref: "#/components/schemas/DriftAtLastScan"
+        meta:
+          $ref: "#/components/schemas/MetaData"
+    UnregisteredAccount:
+      type: object
+      properties:
+        Id:
+          type: string
+          description: The unique identifier (ID) of the account
+        Arn:
+          type: string
+          description: The Amazon Resource Name (ARN) of the account
+        Email:
+          type: string
+          format: email
+          description: The email address associated with the AWS account
+        Name:
+          type: string
+          description: The friendly name of the account
+        Status:
+          type: string
+          enum:
+            - ACTIVE
+            - SUSPENDED
+            - PENDING
+          description: The status of the account in Organizations
+        JoinedMethod:
+          type: string
+          enum:
+            - INVITED
+            - CREATED
+          description: The method by which the account joined the organization
+        JoinedTimestamp:
+          type: string
+          format: date-time
+          description: The date the account became a part of the organization
+    Lease:
+      type: object
+      required:
+        - uuid
+        - userEmail
+        - status
+        - originalLeaseTemplateUuid
+        - originalLeaseTemplateName
+      properties:
+        userEmail:
+          $ref: "#/components/schemas/UserEmail"
+        uuid:
+          $ref: "#/components/schemas/LeaseUuid"
+        status:
+          $ref: "#/components/schemas/LeaseStatus"
+        originalLeaseTemplateUuid:
+          $ref: "#/components/schemas/LeaseTemplateUuid"
+        originalLeaseTemplateName:
+          $ref: "#/components/schemas/LeaseTemplateName"
+        leaseDurationInHours:
+          $ref: "#/components/schemas/LeaseDurationInHours"
+        maxSpend:
+          $ref: "#/components/schemas/MaxSpend"
+        budgetThresholds:
+          $ref: "#/components/schemas/BudgetThresholds"
+        durationThresholds:
+          $ref: "#/components/schemas/DurationThresholds"
+        comments:
+          $ref: "#/components/schemas/Comments"
+        awsAccountId:
+          $ref: "#/components/schemas/AwsAccountId"
+        leaseId:
+          $ref: "#/components/schemas/LeaseId"
+        startDate:
+          $ref: "#/components/schemas/StartDate"
+        expirationDate:
+          $ref: "#/components/schemas/ExpirationDate"
+        endDate:
+          $ref: "#/components/schemas/EndDate"
+        totalCostAccrued:
+          $ref: "#/components/schemas/TotalCostAccrued"
+        meta:
+          $ref: "#/components/schemas/MetaData"
+    LeaseTemplate:
+      type: object
+      required:
+        - uuid
+        - name
+        - requiresApproval
+        - createdBy
+      properties:
+        uuid:
+          $ref: "#/components/schemas/LeaseTemplateUuid"
+        name:
+          $ref: "#/components/schemas/LeaseTemplateName"
+        description:
+          $ref: "#/components/schemas/LeaseTemplateDescription"
+        requiresApproval:
+          $ref: "#/components/schemas/RequiresApproval"
+        createdBy:
+          $ref: "#/components/schemas/UserEmail"
+        maxSpend:
+          $ref: "#/components/schemas/MaxSpend"
+        budgetThresholds:
+          $ref: "#/components/schemas/BudgetThresholds"
+        leaseDurationInHours:
+          $ref: "#/components/schemas/LeaseDurationInHours"
+        durationThresholds:
+          $ref: "#/components/schemas/DurationThresholds"
+        meta:
+          $ref: "#/components/schemas/MetaData"
+    GlobalConfiguration:
+      type: object
+      required:
+        - termsOfService
+        - maintenanceMode
+        - leases
+        - cleanup
+        - auth
+        - notification
+      properties:
+        termsOfService:
+          type: string
+          description: The terms of service that must be agreed to before a lease can be requested
+        maintenanceMode:
+          type: boolean
+          description: If enabled, the system will prevent the creation of new leases
+        leases:
+          type: object
+          required:
+            - maxBudget
+            - defaultBudgetThresholds
+            - defaultDurationThresholds
+            - maxBudgetReclamationThreshold
+            - maxDurationHours
+            - maxLeasesPerUser
+          properties:
+            maxBudget:
+              type: number
+              description: Maximum budget value (in dollars) that can be created on lease templates
+            defaultBudgetThresholds:
+              type: array
+              minItems: 1
+              items:
+                type: integer
+                minimum: 0
+              description: List of default budget thresholds in whole-number percentages of the selected budget
+            defaultDurationThresholds:
+              type: array
+              minItems: 1
+              items:
+                type: integer
+                minimum: 0
+              description: List of default duration thresholds in whole-number percentages of the selected duration
+            maxBudgetReclamationThreshold:
+              type: integer
+              minimum: 0
+              description: the maximum percentage of the desired budget that can be set for the final reclamation threshold
+            maxDurationHours:
+              type: number
+              minimum: 0
+              description: Maximum duration (in hours) that can be specified on a lease template
+            maxLeasesPerUser:
+              type: integer
+              minimum: 0
+              description: The maximum number of active leases a user can have at any one time
+        cleanup:
+          type: object
+          required:
+            - numberOfFailedAttemptsToCancelCleanup
+            - waitBeforeRetryFailedAttemptSeconds
+            - numberOfSuccessfulAttemptsToFinishCleanup
+            - waitBeforeRerunSuccessfulAttemptSeconds
+          properties:
+            numberOfFailedAttemptsToCancelCleanup:
+              type: integer
+              minimum: 0
+              description: The number of failed attempts to cleanup before giving up
+            waitBeforeRetryFailedAttemptSeconds:
+              type: integer
+              minimum: 0
+              description: The number of seconds to wait before retrying a failed attempt to cleanup
+            numberOfSuccessfulAttemptsToFinishCleanup:
+              type: integer
+              minimum: 0
+              description: The number of successful attempts to finish cleanup
+            waitBeforeRerunSuccessfulAttemptSeconds:
+              type: integer
+              minimum: 0
+              description: The number of seconds to wait before rerunning a successful attempt
+        notification:
+          type: object
+          required:
+            - emailFrom
+          properties:
+            emailFrom:
+              type: string
+              format: email
+              description: The email address to send notifications from
+  parameters:
+    PageIdentifier:
+      name: pageIdentifier
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Base64 encoded token for pagination
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Number of items to return per page
+    UserEmail:
+      name: userEmail
+      description: Filter leases by user email
+      in: query
+      required: false
+      schema:
+        type: string
+        format: email
+    LeaseId:
+      name: leaseId
+      description: Base64 encoded unique identifier for lease
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/LeaseId"
+    LeaseTemplateId:
+      name: leaseTemplateId
+      description: UUID for lease template
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/LeaseTemplateUuid"
+    AwsAccountId:
+      name: awsAccountId
+      description: AWS account ID
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/AwsAccountId"
+  responses:
+    BadRequestResponse:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FailResponseBody"
+          example:
+            status: fail
+            data:
+              errors: [{ "message": "example error message" }]
+    UnauthorizedResponse:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FailResponseBody"
+          example:
+            message: Unauthorized
+    ResourceNotFoundResponse:
+      description: Resource Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FailResponseBody"
+          example:
+            status: fail
+            data:
+              errors: [{ "message": "example error message" }]
+    ConflictResponse:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FailResponseBody"
+          example:
+            status: fail
+            data:
+              errors: [{ "message": "example error message" }]
+    ErrorResponse:
+      description: Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponseBody"
+          example:
+            status: error
+            message: "An unexpected error occurred"
+paths:
+  # Lease endpoints
+  /leases:
+    get:
+      tags:
+        - leases
+      summary: Get paginated list of all leases
+      parameters:
+        - $ref: "#/components/parameters/PageIdentifier"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/UserEmail"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/PaginatedResults"
+                          - type: object
+                            properties:
+                              result:
+                                type: array
+                                items:
+                                  allOf:
+                                    - $ref: "#/components/schemas/Lease"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+    post:
+      tags:
+        - leases
+      summary: Request a new lease
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - leaseTemplateUuid
+              properties:
+                leaseTemplateUuid:
+                  $ref: "#/components/schemas/LeaseTemplateUuid"
+                comments:
+                  $ref: "#/components/schemas/Comments"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/Lease"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+  /leases/{leaseId}:
+    parameters:
+      - $ref: "#/components/parameters/LeaseId"
+    get:
+      tags:
+        - leases
+      summary: Get lease by lease id
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        allOf:
+                          - $ref: "#/components/schemas/Lease"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+    patch:
+      tags:
+        - leases
+      summary: Update lease by lease id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                maxSpend:
+                  $ref: "#/components/schemas/MaxSpend"
+                budgetThresholds:
+                  $ref: "#/components/schemas/BudgetThresholds"
+                expirationDate:
+                  $ref: "#/components/schemas/ExpirationDate"
+                durationThresholds:
+                  $ref: "#/components/schemas/DurationThresholds"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/Lease"
+
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+  /leases/{leaseId}/review:
+    parameters:
+      - $ref: "#/components/parameters/LeaseId"
+    post:
+      tags:
+        - leases
+      summary: Review (approve or deny) a pending lease
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  $ref: "#/components/schemas/ThresholdAction"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+  /leases/{leaseId}/freeze:
+    parameters:
+      - $ref: "#/components/parameters/LeaseId"
+    post:
+      tags:
+        - leases
+      summary: Freeze an active lease
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+  /leases/{leaseId}/terminate:
+    parameters:
+      - $ref: "#/components/parameters/LeaseId"
+    post:
+      tags:
+        - leases
+      summary: Terminate an active lease
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+
+  # Lease Template endpoints
+  /leaseTemplates:
+    get:
+      tags:
+        - leaseTemplates
+      summary: Get paginated list of lease templates
+      parameters:
+        - $ref: "#/components/parameters/PageIdentifier"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/PaginatedResults"
+                          - type: object
+                            properties:
+                              result:
+                                type: array
+                                items:
+                                  $ref: "#/components/schemas/LeaseTemplate"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+    post:
+      tags:
+        - leaseTemplates
+      summary: Create new lease template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - budgetConfig
+                - durationConfig
+                - requiresApproval
+              properties:
+                name:
+                  $ref: "#/components/schemas/LeaseTemplateName"
+                description:
+                  $ref: "#/components/schemas/LeaseTemplateDescription"
+                maxSpend:
+                  $ref: "#/components/schemas/MaxSpend"
+                leaseDurationInHours:
+                  $ref: "#/components/schemas/LeaseDurationInHours"
+                budgetThresholds:
+                  $ref: "#/components/schemas/BudgetThresholds"
+                durationThresholds:
+                  $ref: "#/components/schemas/DurationThresholds"
+                requiresApproval:
+                  type: boolean
+                  example: true
+                  description: Whether leases created from this template require approval
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/LeaseTemplate"
+
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+  /leaseTemplates/{leaseTemplateId}:
+    parameters:
+      - $ref: "#/components/parameters/LeaseTemplateId"
+    get:
+      tags:
+        - leaseTemplates
+      summary: Get lease template by id
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/LeaseTemplate"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+    put:
+      tags:
+        - leaseTemplates
+      summary: Update lease template by id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - requiresApproval
+                - maxSpend
+                - leaseDurationInHours
+                - budgetThresholds
+                - durationThresholds
+                - createdBy
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                requiresApproval:
+                  type: boolean
+                maxSpend:
+                  $ref: "#/components/schemas/MaxSpend"
+                leaseDurationInHours:
+                  $ref: "#/components/schemas/LeaseDurationInHours"
+                budgetThresholds:
+                  $ref: "#/components/schemas/BudgetThresholds"
+                durationThresholds:
+                  $ref: "#/components/schemas/DurationThresholds"
+                createdBy:
+                  $ref: "#/components/schemas/CreatedBy"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/LeaseTemplate"
+
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+    delete:
+      tags:
+        - leaseTemplates
+      summary: Delete lease template by id
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+
+  # Account endpoints
+  /accounts:
+    get:
+      tags:
+        - accounts
+      summary: Get paginated list of all accounts
+      parameters:
+        - $ref: "#/components/parameters/PageIdentifier"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/PaginatedResults"
+                          - type: object
+                            properties:
+                              result:
+                                type: array
+                                items:
+                                  $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+    post:
+      tags:
+        - accounts
+      summary: Register account with account pool
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - awsAccountId
+              properties:
+                awsAccountId:
+                  $ref: "#/components/schemas/AwsAccountId"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+  /accounts/{awsAccountId}:
+    parameters:
+      - $ref: "#/components/parameters/AwsAccountId"
+    get:
+      tags:
+        - accounts
+      summary: Get account by account id
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+  /accounts/{awsAccountId}/retryCleanup:
+    parameters:
+      - $ref: "#/components/parameters/AwsAccountId"
+    post:
+      tags:
+        - accounts
+      summary: Retry cleanup for an account
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+  /accounts/{awsAccountId}/eject:
+    parameters:
+      - $ref: "#/components/parameters/AwsAccountId"
+    post:
+      tags:
+        - accounts
+      summary: Eject an account from the sandbox
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/ResourceNotFoundResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+  /accounts/unregistered:
+    get:
+      tags:
+        - accounts
+      summary: Get list of unregistered accounts in Entry OU
+      parameters:
+        - $ref: "#/components/parameters/PageIdentifier"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/PaginatedResults"
+                          - type: object
+                            properties:
+                              result:
+                                type: array
+                                items:
+                                  $ref: "#/components/schemas/UnregisteredAccount"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+
+  # Configuration endpoints
+  /configurations:
+    get:
+      tags:
+        - configurations
+      summary: Get global configurations
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponseBody"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/GlobalConfiguration"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "500":
+          $ref: "#/components/responses/ErrorResponse"
+
+  # Auth endpoints
+  /auth/login:
+    get:
+      tags:
+        - auth
+      summary: Redirect to login page
+      responses:
+        "200":
+          description: Success
+        "302":
+          description: Redirect to login
+        "500":
+          description: Error
+  /auth/login/status:
+    get:
+      tags:
+        - auth
+      summary: Get login status
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authenticated:
+                    type: boolean
+                    description: Whether the user is authenticated or not
+                  session:
+                    type: object
+                    description: Session information
+                  message:
+                    type: string
+                    description: Message
+        "500":
+          description: Error
+  /auth/login/callback:
+    post:
+      tags:
+        - auth
+      summary: Callback from login page
+      responses:
+        "302":
+          description: Redirect to web app with token
+        "500":
+          description: Error
+  /auth/logout:
+    get:
+      tags:
+        - auth
+      summary: Logout
+      responses:
+        "302":
+          description: Redirect to logout
+        "500":
+          description: Error

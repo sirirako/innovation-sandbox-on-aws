@@ -1,0 +1,44 @@
+*.js
+!jest.config.js
+*.d.ts
+!vite-env.d.ts
+node_modules/
+!source/.typescript/lambda/**/*.js
+!source/lambda/**/*.js
+!source/infrastructure/lib/components/alb/api-proxy-container/app.js
+dist
+bom.json
+.env
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+deployment/global-s3-assets
+deployment/regional-s3-assets
+deployment/ecr
+open-source/
+staging/
+
+# Temporary folders
+tmp/
+temp/
+.temp_*/
+.build
+.test-reports
+
+### VisualStudioCode ###
+.vscode
+
+### Kiro IDE ###
+.kiro
+
+### macOS ###
+.DS_Store
+
+.idea
+
+**/coverage
+
+# ALB Container build artifacts
+source/infrastructure/lib/components/alb/api-proxy-container/public/
